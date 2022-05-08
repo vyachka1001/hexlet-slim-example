@@ -6,10 +6,17 @@ use Slim\Factory\AppFactory;
 use DI\Container;
 use App\Validator;
 
+session_start();
+
 $container = new Container();
 $container->set('renderer', function () {
     return new \Slim\Views\PhpRenderer(__DIR__ . '/../templates');
 });
+
+$container->set('flash', function () {
+    return new \Slim\Flash\Messages();
+});
+
 $app = AppFactory::createFromContainer($container);
 $app->addErrorMiddleware(true, true, true);
 
@@ -22,11 +29,14 @@ $app->get('/', function ($request, $response) {
 })->setName('root');
 
 $app->get('/users', function ($request, $response, array $args) use ($users) {
+    $messages = $this->get('flash')->getMessages();
     $term = $request->getQueryParam('term', '');
     $params = [
         'users' => array_filter($users, fn ($userName) => str_contains($userName, $term)),
-        'term' => $term
+        'term' => $term,
+        'flash' => $messages
     ];
+
     return $this->get('renderer')->render($response, 'users/index.phtml', $params);
 })->setName('users');
 
@@ -37,6 +47,8 @@ $app->post('/users', function ($request, $response) use ($router) {
     if (count($errors) === 0) {
         $encodedData = json_encode($user);
         file_put_contents('./public/user.json', $encodedData);
+        $this->get('flash')->addMessage('success', 'User was added');
+
         return $response->withRedirect($router->urlFor('users'), 302);
     }
     $params = [
