@@ -4,15 +4,17 @@ namespace App;
 
 class Validator
 {
+    const MIN_LENGTH = 4;
+    const MAX_LENGTH = 16;
+
     public function validate(array $user)
     {
         $errors = [];
-        if (empty($user['name'])) {
-            $errors['name'] = "Can't be blank";
-        }
-
-        if (empty($user['email'])) {
-            $errors['email'] = "Can't be blank";
+        
+        $name = $user['name'];
+        $length = strlen($name);
+        if ($length < self::MIN_LENGTH || $length > self::MAX_LENGTH) {
+            $errors['name'] = 'Name must contains from 4 to 16 characters';
         }
 
         return $errors;
