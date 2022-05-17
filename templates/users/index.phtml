@@ -1,4 +1,6 @@
-<?= var_dump($flash) ?>
+<?php if (!empty($flash)) {
+    print_r($flash);
+} ?>
 
 <form action="/users" method="get">
   <input type="search" name="term" value="<?= htmlspecialchars($term) ?>" />
@@ -6,10 +8,13 @@
 </form>
 
 <table>
-    <?php foreach ($users as $userName): ?>
+    <?php foreach ($users as $user): ?>
     <tr>
         <td>
-            <?= htmlspecialchars($userName)?>
+            <?= $user['id'] ?>
+        </td>
+        <td>
+            <a href="/users/show/<?= $user['id'] ?>"><?= $user['name'] ?></a>
         </td>
     </tr>
     <?php endforeach ?>
