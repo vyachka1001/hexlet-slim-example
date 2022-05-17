@@ -2,7 +2,7 @@
   <div>
     <label>
         Имя
-      <input type="text" name="user[name]" value="<?= htmlspecialchars($user['name']) ?>">
+      <input type="text" name="user[name]" value="<?= htmlspecialchars($user['name']) ?>" required>
     </label>
     <?php if (isset($errors['name'])): ?>
       <div><?= $errors['name'] ?></div>
@@ -11,7 +11,7 @@
   <div>
     <label>
         Email
-      <input type="text" name="user[email]" value="<?= htmlspecialchars($user['email']) ?>">
+      <input type="email" name="user[email]" value="<?= htmlspecialchars($user['email']) ?>" required>
     </label>
     <?php if (isset($errors['email'])): ?>
       <div><?= $errors['email'] ?></div>
