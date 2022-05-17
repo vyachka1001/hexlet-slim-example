@@ -20,19 +20,18 @@ $container->set('flash', function () {
 $app = AppFactory::createFromContainer($container);
 $app->addErrorMiddleware(true, true, true);
 
-$users = ['mike', 'mishel', 'adel', 'keks', 'kamila'];
-
 $router = $app->getRouteCollector()->getRouteParser();
 
 $app->get('/', function ($request, $response) {
     return $response->write('Welcome to Slim!');
 })->setName('root');
 
-$app->get('/users', function ($request, $response, array $args) use ($users) {
+$app->get('/users', function ($request, $response, array $args){
     $messages = $this->get('flash')->getMessages();
     $term = $request->getQueryParam('term', '');
+    $users = json_decode(file_get_contents('./public/user.json'), true) ?? [];
     $params = [
-        'users' => array_filter($users, fn ($userName) => str_contains($userName, $term)),
+        'users' => array_filter($users, fn ($user) => str_contains($user['name'], $term)),
         'term' => $term,
         'flash' => $messages
     ];
@@ -45,7 +44,11 @@ $app->post('/users', function ($request, $response) use ($router) {
     $user = $request->getParsedBodyParam('user');
     $errors = $validator->validate($user);
     if (count($errors) === 0) {
-        $encodedData = json_encode($user);
+        $currData = file_get_contents('./public/user.json');
+        $decodedData = json_decode($currData, true);
+        $user['id'] = $decodedData ? count($decodedData) : 0;
+        $decodedData[] = $user;
+        $encodedData = json_encode($decodedData, JSON_PRETTY_PRINT);
         file_put_contents('./public/user.json', $encodedData);
         $this->get('flash')->addMessage('success', 'User was added');
 
@@ -59,7 +62,11 @@ $app->post('/users', function ($request, $response) use ($router) {
 })->setName('addUser');
 
 $app->get('/users/show/{id}', function ($request, $response, $args) {
-    $params = ['id' => $args['id'], 'nickname' => 'user-' . $args['id']];
+    $id = $args['id'];
+    $users = json_decode(file_get_contents('./public/user.json'), true);
+    $params = [
+        'user' => $users[$id]
+    ];
     return $this->get('renderer')->render($response, 'users/show.phtml', $params);
 })->setName('user');
 
@@ -70,10 +77,5 @@ $app->get('/users/new', function ($request, $response, $args) {
     ];
     return $this->get('renderer')->render($response, 'users/new.phtml', $params);
 })->setName('newUser');
-
-$app->get('/courses/{id}', function ($request, $response, array $args) {
-    $id = $args['id'];
-    return $response->write("Course id: {$id}");
-})->setName('course');
 
 $app->run();
