@@ -23,7 +23,7 @@ $app->addErrorMiddleware(true, true, true);
 $router = $app->getRouteCollector()->getRouteParser();
 
 $app->get('/', function ($request, $response) {
-    return $response->write('Welcome to Slim!');
+    return $this->get('renderer')->render($response, 'index.phtml');
 })->setName('root');
 
 $app->get('/users', function ($request, $response, array $args){
